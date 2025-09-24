@@ -16,9 +16,12 @@ for address in addresses:
         print(f'received "{response.text}"')
         if response.text != address:
             failed = True
+        requests.put(f"http://{address}/storage/3", data="3")
         response = requests.get(f"http://{address}/storage/1")
         print(f'received "{response.text}"')
         response = requests.get(f"http://{address}/storage/2")
+        print(f'received "{response.text}"')
+        response = requests.get(f"http://{address}/storage/3")
         print(f'received "{response.text}"')
         response = requests.get(f"http://{address}/network")
         print(f'received "{response.text}"')
