@@ -30,7 +30,7 @@ class Chord_node:
             if key == unknown_key:
                 return self.keys.get(key)
         
-        return follower.get_key(key)
+        return self.follower.get_key(checked_names, unknown_key)
         
     def get_name(self):
         return str(self.name)

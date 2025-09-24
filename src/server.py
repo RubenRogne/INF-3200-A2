@@ -15,15 +15,17 @@ import requests
 from urllib.parse import urlsplit
 
 CHORDSIZE = 65536
-#todo
+
 """
+TODO:
 linked list structure with pointer from first to last as well
-do get /sorage/key
-    return storage key if within adress space
+
+do get /storage/key
+    does now only support keys as ints in a dict
     else get/storage/key neighbour
+    
 do get /network
-    run through list and get all nodes
-    return in a list
+    missing json formating
     #do this by only allowing the node itself and its successor to be known and written into the list at startup
 do put /storage/key
     add key to storage space, adress is decided by hash
@@ -49,7 +51,7 @@ except ValueError:
 def main() -> None:
     node_address = str(sys.argv[2]) #requires that we pass the node a second time
     follower = str(sys.argv[3])
-    node = CN(hash(node_address), node_address, CN(hash(follower), follower, None, node_address, {1:2}), follower, {1:1})
+    node = CN(hash(node_address), node_address, CN(hash(follower), follower, None, node_address, {2:2}), follower, {1:1})
     node.follower.assign_follower(node)
     HelloWorldHandler.node = node
     #print(requests.get(sys.argv(3)+"/helloworld"))
@@ -93,7 +95,10 @@ class HelloWorldHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = urlsplit(self.path).path  # ignore ?query
-        if path == "/helloworld":
+        path = path.split("/")
+        path = path[1:] #remove first empty split
+        print(path)
+        if path[0] == "helloworld":
             body = f"{HOSTNAME}:{PORT}".encode("utf-8")
             self._ok_headers(len(body))
             self.wfile.write(body)
@@ -103,11 +108,12 @@ class HelloWorldHandler(http.server.BaseHTTPRequestHandler):
             except Exception:
                 pass
         
-        elif path == "/storage/1":
-            body = (str(self.node.get_key([], 1))).encode("utf-8")
+        elif path[0] == "storage":
+            body = (str(self.node.get_key([], int(path[1])))).encode("utf-8")
             self._ok_headers(len(body))
             self.wfile.write(body)
-        elif path == "/network": #must format output to json
+            
+        elif path[0] == "network": 
             body = (str(self.node.get_network(self.node.get_name(), []))).encode("utf-8")
             self._ok_headers(len(body))
             self.wfile.write(body)
