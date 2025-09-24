@@ -5,7 +5,11 @@ import json
 addresses = json.loads(sys.argv[1])
 
 failed = False
-
+print(f"{addresses[-1]}")
+print("http://"+addresses[0]+"/helloworld")
+print(f"http://{addresses[0]}/helloworld")
+node = requests.get("http://"+addresses[0]+"/follower/"+addresses[-1])
+print(node)
 for address in addresses:
     try:
         response = requests.get(f"http://{address}/helloworld")
