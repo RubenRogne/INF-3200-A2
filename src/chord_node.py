@@ -4,7 +4,7 @@ class Chord_node:
     def __init__(self, name, address, follower, keys):
         self.name = name
         self.address = address
-        self.follower = follower #Should be followers IP NOT OBJ
+        self.follower = follower #ADDRESS
         self.fingertable = None
         self.keys = {} #should enforce a dict maybe?
         self.keys.update(keys)
@@ -15,21 +15,20 @@ class Chord_node:
 
 
     def ask_follower_for_network(self, known_nodes):
-        print(f"http://{self.follower}/network/"+known_nodes+"\n")
-        return requests.get(f"http://{self.follower}/network/"+str(known_nodes))
+        #print(f"http://{self.follower}/network/"+known_nodes+"\n")
+        return (requests.get(f"http://{self.follower}/network/"+str(known_nodes))).text
     
-    def get_network(self, name, known_nodes):
-        if name in known_nodes.split("_"):
+    def get_network(self, address, known_nodes): #realised i dont need address, it knows itself
+        if address in known_nodes.split("_"):
             return known_nodes
         else:
-            known_nodes = known_nodes + "_" + self.name
+            known_nodes = known_nodes + "_" + self.address
             return self.ask_follower_for_network(known_nodes)
         
     
     def ask_follower_for_key(self, checked_names, unknown_key):
-        print(f"http://{self.follower}/storage/"+str(unknown_key)+"\n\n")
-        return requests.get(f"http://{self.follower}/storage/"+str(unknown_key)+"/"+str(checked_names))
-        #WORKS but returns "response 200" instead of actual useful value
+        print(f"http://{self.follower}/storage/"+str(unknown_key)+"\n")
+        return requests.get(f"http://{self.follower}/storage/"+str(unknown_key)+"/"+str(checked_names)).text
     
     def get_key(self, checked_names, unknown_key):
         if self.name in checked_names:
@@ -43,7 +42,9 @@ class Chord_node:
     
     def add_key(self, key, value):
         self.keys.update({key : value})
-        return 1
+        return self.keys
     
     def get_name(self):
         return str(self.name)
+    def get_address(self):
+        return str(self.address)

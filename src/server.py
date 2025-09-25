@@ -54,18 +54,18 @@ def main() -> None:
     node_address = str(sys.argv[2]) #requires that we pass the node a second time
     follower_address = str(sys.argv[3])
     
-    node = CN(nodename(node_address), node_address, None, {1:1})
-    follower = CN(nodename(follower_address), follower_address, None, {2:2})
+    node = CN(nodename(node_address), node_address, None, {"1":"1"})
+    #follower = CN(nodename(follower_address), follower_address, None, {2:2})
     
-    node.assign_follower(follower.address)
-    print(node.follower, "and ", follower)
-    follower.assign_follower(node.address)
+    node.assign_follower(follower_address)
+    #fprint(node.follower, "and ", follower)
+    #follower.assign_follower(node.address)#Connects them trivially to each other (no sequence)
     
     HelloWorldHandler.node = node
-    HelloWorldHandler.follower = follower
+    #HelloWorldHandler.follower = follower
     
     #print(requests.get(sys.argv(3)+"/helloworld"))
-    print(follower.get_name(), "and the main node: ", node.get_name())
+    #print(follower.get_name(), "and the main node: ", node.get_name())
     
     try:
         httpd = ThreadingHTTPServer(("", PORT), HelloWorldHandler)  # bind all ifaces
@@ -104,7 +104,7 @@ class HelloWorldHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Connection", "close")
         self.end_headers()
 
-    def do_GET(self) -> None:
+    def do_GET(self) -> None: #works, reminder to self: DONT BREAK IT
         path = urlsplit(self.path).path  # ignore ?query
         path = path.split("/")
         path = path[1:] #remove first empty split
@@ -121,21 +121,21 @@ class HelloWorldHandler(http.server.BaseHTTPRequestHandler):
         
         elif path[0] == "storage":
             if len(path)>2:
-                body = (str(self.node.get_key(str(path[2]), int(path[1])))).encode("utf-8")
+                body = (str(self.node.get_key(str(path[2]), str(path[1])))).encode("utf-8")
                 self._ok_headers(len(body))
                 self.wfile.write(body)
             else:
-                body = (str(self.node.get_key("", int(path[1])))).encode("utf-8")
+                body = (str(self.node.get_key("", str(path[1])))).encode("utf-8")
                 self._ok_headers(len(body))
                 self.wfile.write(body)
             
         elif path[0] == "network": 
             if len(path)>1:
-                body = (str(self.node.get_network(self.node.get_name(), path[1]))).encode("utf-8")
+                body = (str(self.node.get_network(self.node.get_address(), path[1]))).encode("utf-8")
                 self._ok_headers(len(body))
                 self.wfile.write(body)
             else:
-                body = (str(self.node.get_network(self.node.get_name(), ""))).encode("utf-8")
+                body = (str(self.node.get_network(self.node.get_address(), ""))).encode("utf-8")
                 self._ok_headers(len(body))
                 self.wfile.write(body)
         
@@ -165,18 +165,20 @@ class HelloWorldHandler(http.server.BaseHTTPRequestHandler):
             correct_dict = True #assuming correct spot
             if correct_dict:
                 data = (self.rfile.read(int(self.headers.get('Content-Length')))).decode("utf-8")
-                self.node.add_key(path[1], data)
+                returnvalue = self.node.add_key(path[1], data)
+                print(path[1], data, returnvalue, " THIS is a put")
             #data = (self.rfile.read(self.headers.get(int('Content-Length')))).decode("utf-8")
             #print(data)
             self._ok_headers(0)
         
-        if path[0] == "follower":
-            print(path[1])
+        if path[0] == "fixfollower": ##DOES NOT CURRENTLY WORK
+            #print(path[1])
             
-            data = (self.rfile.read(self.headers.get(int('Content-Length')))).decode("utf-8")
-            print(data)
+            #data = (self.rfile.read(self.headers.get(int('Content-Length')))).decode("utf-8")
+            #print(data)
+            #self.node.assign_follower = CN(nodename(path[1]), path[1], node, {})
+            #self.node.
             
-            self.node.assign_follower = CN(nodename(path[1]), path[1], node, {})
             #body = (str(self.node.get_network(self.node.get_name(), []))).encode("utf-8")
             self._ok_headers((self.node.get_name()).encode("utf-8"))
             self.wfile.write(len((self.node.get_name()).encode("utf-8")))

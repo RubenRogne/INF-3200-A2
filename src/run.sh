@@ -65,7 +65,8 @@ for ((i=0; i<N; i++)); do
     ssh -f "$node" "nohup python3 -u '$SERVER_PY' '$port' '${addresses}' '${addresses}'  >/dev/null 2>&1 < /dev/null &"
     echo "first round"
   else
-    ssh -f "$node" "nohup python3 -u '$SERVER_PY' '$port' '${addresses[-2]}' '${addresses[-1]}' 2>&1 > output.txt"
+    #port is for the server, the last address is its full name and the second to last is its predeccesor
+    ssh -f "$node" "nohup python3 -u '$SERVER_PY' '$port' '${addresses[-1]}' '${addresses[-2]}' 2>&1 > A2/output.txt"
     #" >/dev/null 2>&1 < /dev/null &"
     echo "subsequent round ${addresses[-1]}"
   fi 
